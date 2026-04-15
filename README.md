@@ -154,4 +154,4 @@ java -cp out com.tpsockets.app.client.ClientMain
 
 ## LINK REPO
 
-- Pendiente de publicación en GitHub
+- [AxelMrak/socket-chat-programacion-avanzada](https://github.com/AxelMrak/socket-chat-programacion-avanzada)
