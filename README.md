@@ -17,42 +17,6 @@ El proyecto está organizado en cuatro capas:
 - `infrastructure`: red (sockets) y logging por consola.
 - `shared`: configuración común (`HOST`, `PORT`, comandos, mensajes).
 
-## Mapa básico de clases (Mermaid)
-
-```mermaid
-classDiagram
-direction LR
-
-class ClientMain
-class ServerMain
-class ChatClient
-class ChatServer
-class ClientSessionHandler
-class MessageProcessor {
-  <<interface>>
-  +process(message)
-}
-class DefaultMessageProcessor
-class ConsoleLogger
-class Config
-
-ClientMain --> ChatClient
-ServerMain --> ChatServer
-ServerMain --> MessageProcessor
-ServerMain --> ConsoleLogger
-
-ChatServer --> MessageProcessor
-ChatServer --> ConsoleLogger
-ChatServer --> ClientSessionHandler : crea
-
-ClientSessionHandler --> MessageProcessor
-ClientSessionHandler --> ConsoleLogger
-ClientSessionHandler --> Config
-
-ChatClient --> Config
-DefaultMessageProcessor ..|> MessageProcessor
-```
-
 ## Patrones de diseño utilizados
 
 ### 1. Patrón de comportamiento: *Strategy*
@@ -85,7 +49,6 @@ En el servidor, cada cliente aceptado se procesa en un `Thread` independiente:
 - `./src/com/tpsockets/infrastructure/network/ChatServer.java` crea una nueva sesión por conexión.
 - `./src/com/tpsockets/infrastructure/network/ClientSessionHandler.java` encapsula el ciclo de vida de cada cliente.
 
-Para un trabajo académico y una escala chica/mediana, este modelo es claro y fácil de seguir conceptualmente.
 
 ## Principios SOLID aplicados
 
