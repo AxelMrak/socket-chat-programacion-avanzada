@@ -89,6 +89,18 @@ El servidor depende de una abstracción (`MessageProcessor`) y no de una impleme
 - `HELP`
 - `SALIR`
 
+### Comando de operador (consola del servidor)
+
+- `BROADCAST <mensaje>` → envía a todos (modo por defecto).
+- `BROADCAST ALL <mensaje>` → envía a todos (modo explícito).
+- `BROADCAST <CLIENT_ID> <mensaje>` → envía sólo al cliente indicado.
+
+### Registro de nombre de cliente al conectar
+
+- Al iniciar un cliente, el servidor solicita un nombre (`CLIENT_ID`).
+- Reglas: 3 a 20 caracteres, sólo letras, números, `_` o `-`.
+- El servidor rechaza nombres inválidos o repetidos y vuelve a pedir otro.
+
 ## Cómo ejecutar
 
 ### 1) Compilar

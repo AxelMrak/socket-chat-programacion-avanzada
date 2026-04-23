@@ -33,7 +33,26 @@ public class ChatClient {
         var scanner = new Scanner(System.in)) {
 
       System.out.println("Conectado al servidor en " + host + ":" + port);
+
+      performClientIdHandshake(reader, writer, scanner);
       System.out.println(Config.WELCOME_MSG);
+
+      Thread serverReaderThread =
+          new Thread(
+              () -> {
+                try {
+                  String serverMessage;
+                  while ((serverMessage = reader.readLine()) != null) {
+                    System.out.println("\n" + serverMessage);
+                    System.out.print("> ");
+                  }
+                } catch (IOException e) {
+                  System.out.println("\nConexión con servidor cerrada.");
+                }
+              });
+
+      serverReaderThread.setDaemon(true);
+      serverReaderThread.start();
 
       while (true) {
         System.out.print("> ");
@@ -41,20 +60,40 @@ public class ChatClient {
 
         writer.println(input);
 
-        String response = reader.readLine();
-        if (response == null) {
-          System.out.println("El servidor cerró la conexión.");
-          break;
-        }
-
-        System.out.println(response);
-
         if (input.trim().equalsIgnoreCase(Config.EXIT_COMMAND)) {
           break;
         }
       }
     } catch (IOException e) {
       System.err.println("Error de conexión: " + e.getMessage());
+    }
+  }
+
+  private void performClientIdHandshake(
+      BufferedReader reader, PrintWriter writer, Scanner scanner) throws IOException {
+    while (true) {
+      String serverPrompt = reader.readLine();
+
+      if (serverPrompt == null) {
+        throw new IOException("No se recibió prompt de identificación desde el servidor.");
+      }
+
+      System.out.println(serverPrompt);
+      System.out.print("> ");
+      String requestedClientId = scanner.nextLine();
+      writer.println(requestedClientId);
+
+      String serverReply = reader.readLine();
+
+      if (serverReply == null) {
+        throw new IOException("Conexión cerrada durante registro de nombre de cliente.");
+      }
+
+      System.out.println(serverReply);
+
+      if (serverReply.startsWith(Config.CLIENT_ID_ASSIGNED_PREFIX)) {
+        return;
+      }
     }
   }
 }
