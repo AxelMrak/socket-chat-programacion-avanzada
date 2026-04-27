@@ -7,6 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class InMemoryClientBroadcaster implements ClientBroadcaster {
 
+  // Avoid RACE CONDITIONS using ConcurrentHashMap and synchronizing on PrintWriter when writing to it
   private final Map<String, PrintWriter> clientWritersById = new ConcurrentHashMap<>();
 
   @Override
