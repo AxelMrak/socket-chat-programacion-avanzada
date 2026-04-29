@@ -14,5 +14,10 @@ public class Config {
   public static final String CLIENT_ID_IN_USE_MESSAGE = "Ese nombre ya está en uso. Elegí otro.";
   public static final String WELCOME_MSG = "\n--- Proyecto AXEL - TP Sockets ---\nIngrese un mensaje para enviar al servidor (o '"
       + EXIT_COMMAND + "' para salir):";
+  public static final String BET_COMMAND = "BET";
+  public static final String BET_PROMPT_SELECT_MATCH = "BET: Elegí un partido por número (o CANCELAR para salir):";
+  public static final String BET_PROMPT_PLACE_BET = "BET: Ingresá apuesta como '<equipo> <monto>' (o CANCELAR para salir):";
+  public static final String BET_CANCEL_COMMAND = "CANCELAR";
+  public static final String BET_LOG_FILE = "bets-log.txt";
 
 }
