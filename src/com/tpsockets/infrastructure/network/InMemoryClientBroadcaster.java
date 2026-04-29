@@ -3,6 +3,7 @@ package com.tpsockets.infrastructure.network;
 import java.io.PrintWriter;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class InMemoryClientBroadcaster implements ClientBroadcaster {
@@ -12,6 +13,7 @@ public class InMemoryClientBroadcaster implements ClientBroadcaster {
 
   @Override
   public boolean register(String clientId, PrintWriter writer) {
+    Objects.requireNonNull(writer, "writer no puede ser null");
     String normalizedClientId = normalize(clientId);
     return clientWritersById.putIfAbsent(normalizedClientId, writer) == null;
   }
@@ -24,9 +26,7 @@ public class InMemoryClientBroadcaster implements ClientBroadcaster {
   @Override
   public void broadcast(String message) {
     for (PrintWriter writer : clientWritersById.values()) {
-      synchronized (writer) {
-        writer.println(message);
-      }
+      println(writer, message);
     }
   }
 
@@ -38,16 +38,8 @@ public class InMemoryClientBroadcaster implements ClientBroadcaster {
       return false;
     }
 
-    synchronized (writer) {
-      writer.println(message);
-    }
-
+    println(writer, message);
     return true;
-  }
-
-  @Override
-  public boolean hasClient(String clientId) {
-    return clientWritersById.containsKey(normalize(clientId));
   }
 
   @Override
@@ -56,6 +48,7 @@ public class InMemoryClientBroadcaster implements ClientBroadcaster {
   }
 
   private String normalize(String clientId) {
+    Objects.requireNonNull(clientId, "clientId no puede ser null");
     return clientId.trim().toLowerCase(Locale.ROOT);
   }
 }

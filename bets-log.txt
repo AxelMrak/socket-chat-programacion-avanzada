@@ -1,0 +1,9 @@
+2026-04-28 13:50:10 | client=bob | matchId=1 | match='Argentina vs Uruguay - 03/05/2026' | team=Uruguay | amount=900.0
+2026-04-28 13:50:10 | client=alice | matchId=1 | match='Argentina vs Uruguay - 03/05/2026' | team=Argentina | amount=1500.0
+2026-04-28 13:51:08 | client=alice | matchId=1 | match='Argentina vs Uruguay - 03/05/2026' | team=Argentina | amount=1500.0
+2026-04-28 13:51:08 | client=bob | matchId=1 | match='Argentina vs Uruguay - 03/05/2026' | team=Uruguay | amount=900.0
+2026-04-28 14:08:26 | client=axel | matchId=1 | match='Argentina vs Uruguay - 03/05/2026' | team=argentina | amount=2000.0
+2026-04-28 14:08:38 | client=alan | matchId=1 | match='Argentina vs Uruguay - 03/05/2026' | team=uruguay | amount=3000.0
+2026-04-28 14:08:43 | client=alan | matchId=1 | match='Argentina vs Uruguay - 03/05/2026' | team=argentina | amount=2100.0
+2026-04-28 16:36:48 | client=andres | matchId=1 | match='Argentina vs Uruguay - 03/05/2026' | team=argentina | amount=200.0
+2026-04-28 16:37:01 | client=julian | matchId=1 | match='Argentina vs Uruguay - 03/05/2026' | team=URUGUAY | amount=3000.0

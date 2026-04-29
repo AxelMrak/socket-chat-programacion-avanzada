@@ -12,7 +12,11 @@ public interface ClientBroadcaster {
 
   boolean broadcastToClient(String clientId, String message);
 
-  boolean hasClient(String clientId);
-
   int connectedClientsCount();
+
+  default void println(PrintWriter writer, String message) {
+    synchronized (writer) {
+      writer.println(message);
+    }
+  }
 }
