@@ -12,16 +12,31 @@ public class BetCoordinator {
   private final BetLogRepository betLogRepository;
   private final ClientBroadcaster clientBroadcaster;
   private final AppLogger logger;
+  private final BetRankingTracker rankingTracker;
 
   public BetCoordinator(
       BetMatchCatalog betMatchCatalog,
       BetLogRepository betLogRepository,
       ClientBroadcaster clientBroadcaster,
       AppLogger logger) {
+    this(betMatchCatalog, betLogRepository, clientBroadcaster, logger, new BetRankingTracker());
+  }
+
+  public BetCoordinator(
+      BetMatchCatalog betMatchCatalog,
+      BetLogRepository betLogRepository,
+      ClientBroadcaster clientBroadcaster,
+      AppLogger logger,
+      BetRankingTracker rankingTracker) {
     this.betMatchCatalog = Objects.requireNonNull(betMatchCatalog, "betMatchCatalog no puede ser null");
     this.betLogRepository = Objects.requireNonNull(betLogRepository, "betLogRepository no puede ser null");
     this.clientBroadcaster = Objects.requireNonNull(clientBroadcaster, "clientBroadcaster no puede ser null");
     this.logger = Objects.requireNonNull(logger, "logger no puede ser null");
+    this.rankingTracker = Objects.requireNonNull(rankingTracker, "rankingTracker no puede ser null");
+  }
+
+  public BetRankingTracker getRankingTracker() {
+    return rankingTracker;
   }
 
   public String renderMatchList() {
@@ -71,6 +86,8 @@ public class BetCoordinator {
 
     BetEntry betEntry = new BetEntry(clientId, match.id(), match.title(), team, amount, LocalDateTime.now());
     betLogRepository.append(betEntry);
+
+    rankingTracker.recordBetPlaced(clientId, amount);
 
     String realtimeMessage = "Cliente " + clientId + " apostó " + amount + " a " + team + " en " + match.title();
     clientBroadcaster.broadcast(realtimeMessage);
