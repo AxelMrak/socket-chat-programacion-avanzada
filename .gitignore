@@ -10,3 +10,5 @@ out/
 *.iml
 .vscode/
 /.ai/
+/.sisyphus/run-continuation/ses_1f119d7c6ffech5LNU9fgj0tJb.json
+/bets-log.txt
