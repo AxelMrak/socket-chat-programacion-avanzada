@@ -5,17 +5,18 @@
 - Fecha: 15-04-2026
 - Asignatura: Programación Avanzada
 
-Implementación de un chat cliente-servidor usando sockets TCP en Java.
+Implementación de un chat cliente-servidor usando sockets TCP en Java con interfaz gráfica Swing.
 El objetivo del trabajo es aplicar conceptos de arquitectura por capas, separación de responsabilidades y diseño orientado a interfaces para lograr un código simple de mantener y extender.
 
 ## Estructura general del proyecto
 
-El proyecto está organizado en cuatro capas:
+El proyecto está organizado en cuatro capas más la capa de UI:
 
-- `app`: puntos de entrada (`ClientMain` y `ServerMain`).
-- `domain`: lógica de negocio para procesar mensajes.
-- `infrastructure`: red (sockets) y logging por consola.
-- `shared`: configuración común (`HOST`, `PORT`, comandos, mensajes).
+- `app`: puntos de entrada (consola y Swing, servidor y cliente, plus dashboard).
+- `domain`: lógica de negocio para procesar mensajes y sistema de apuestas con ranking.
+- `infrastructure`: red (sockets), logging por consola y repositorio de apuestas en archivo.
+- `shared`: configuración común (`HOST`, `PORT`, comandos, mensajes) e interfaz de logger.
+- `ui`: componentes Swing reutilizables (tema oscuro, logger visual, formateadores) y ventanas de servidor y cliente.
 
 ## Patrones de diseño utilizados
 
@@ -36,7 +37,8 @@ La ventaja principal es que la lógica de procesamiento no queda acoplada a la i
 No es un patrón GoF clásico, pero sí un patrón de diseño clave en sistemas mantenibles.
 
 - `./src/com/tpsockets/app/server/ServerMain.java` actúa como *composition root*.
-- Allí se crean `ConsoleLogger`, `DefaultMessageProcessor` y `ChatServer`.
+- `./src/com/tpsockets/app/dashboard/Dashboard.java` arma el grafo de objetos para la versión Swing.
+- Allí se crean `ConsoleLogger`, `DefaultMessageProcessor`, `ChatServer`, `BetCoordinator`, etc.
 
 Esto evita que `ChatServer` construya sus dependencias internamente (`new` dispersos), reduciendo acoplamiento y facilitando pruebas o reemplazos futuros.
 
@@ -49,6 +51,35 @@ En el servidor, cada cliente aceptado se procesa en un `Thread` independiente:
 - `./src/com/tpsockets/infrastructure/network/ChatServer.java` crea una nueva sesión por conexión.
 - `./src/com/tpsockets/infrastructure/network/ClientSessionHandler.java` encapsula el ciclo de vida de cada cliente.
 
+---
+
+### 4. Patrón *Decorator* — ObservableBroadcaster
+
+`ObservableBroadcaster` decora `ClientBroadcaster` agregando notificaciones de cambios en la lista de clientes conectados. Permite que la UI reaccione a conexiones y desconexiones sin modificar la lógica de broadcast original.
+
+---
+
+### 5. Sistema de apuestas con *BetCoordinator*
+
+Flujo de apuestas integrado en el chat:
+
+1. El cliente envía `BET`.
+2. El servidor muestra los partidos disponibles (`BetMatchCatalog`).
+3. El cliente selecciona un partido por número.
+4. El cliente ingresa `<equipo> <monto>`.
+5. Se registra la apuesta en `BetLogRepository` (archivo de texto) y se actualiza el ranking.
+
+### 6. Ranking de apuestas — *BetRankingTracker*
+
+Cada apuesta se registra en un tracker que mantiene estadísticas por cliente:
+
+- Total de apuestas, ganadas y perdidas.
+- Monto apostado y ganado.
+- Win rate, ganancia neta y puntaje de ranking (60% win rate + 40% ratio de ganancia).
+
+Se muestra en tiempo real en la ventana del servidor.
+
+---
 
 ## Principios SOLID aplicados
 
@@ -59,7 +90,9 @@ Las responsabilidades están separadas:
 - `ChatServer`: aceptar conexiones.
 - `ClientSessionHandler`: manejar la sesión de un cliente.
 - `DefaultMessageProcessor`: interpretar comandos.
-- `ConsoleLogger`: registrar eventos.
+- `ConsoleLogger` / `SwingLogger`: registrar eventos.
+- `BetCoordinator`: orquestar el flujo de apuestas.
+- `BetRankingTracker`: mantener estadísticas de apuestas.
 
 ### O — *Open/Closed Principle*
 
@@ -77,7 +110,7 @@ La interfaz `MessageProcessor` es minimalista y enfocada en un único comportami
 
 El servidor depende de una abstracción (`MessageProcessor`) y no de una implementación concreta para la lógica de dominio.
 
-> Nota: el logger todavía se inyecta como clase concreta (`ConsoleLogger`). Como mejora, se puede extraer una interfaz `LoggerPort` para reforzar aún más DIP.
+> Nota: el logger se inyecta como interfaz (`AppLogger`), con dos implementaciones: `ConsoleLogger` para consola y `SwingLogger` para UI.
 
 ## Comandos disponibles en el chat
 
@@ -89,11 +122,15 @@ El servidor depende de una abstracción (`MessageProcessor`) y no de una impleme
 - `HELP`
 - `SALIR`
 
-### Comando de operador (consola del servidor)
+### Comando de operador (consola del servidor / panel del dashboard)
 
 - `BROADCAST <mensaje>` → envía a todos (modo por defecto).
 - `BROADCAST ALL <mensaje>` → envía a todos (modo explícito).
 - `BROADCAST <CLIENT_ID> <mensaje>` → envía sólo al cliente indicado.
+
+### Comando de apuestas
+
+- `BET` → inicia el flujo de apuestas.
 
 ### Registro de nombre de cliente al conectar
 
@@ -109,17 +146,52 @@ El servidor depende de una abstracción (`MessageProcessor`) y no de una impleme
 javac -d out $(find src -name "*.java")
 ```
 
-### 2) Levantar servidor
+### 2) Dashboard (recomendado)
+
+Una sola ventana para gestionar servidor y clientes:
 
 ```bash
-java -cp out com.tpsockets.app.server.ServerMain
+java -cp out com.tpsockets.app.dashboard.DashboardMain
 ```
 
-### 3) Levantar cliente
+Desde el dashboard podés:
+- Iniciar y detener el servidor.
+- Agregar ventanas de cliente con un clic.
+- Ver el registro de actividad en tiempo real.
+
+### 3) Servidor Swing (independiente)
 
 ```bash
+java -cp out com.tpsockets.app.server.ServerMainSwing
+```
+
+Muestra la ventana del servidor con lista de clientes, log, consola de operador y ranking de apuestas.
+
+### 4) Cliente Swing (independiente)
+
+```bash
+java -cp out com.tpsockets.app.client.ClientMainSwing
+```
+
+Abre una ventana de chat con diálogo de conexión, handshake y soporte para apuestas.
+
+### 5) Modo consola (original)
+
+```bash
+# Servidor
+java -cp out com.tpsockets.app.server.ServerMain
+
+# Cliente
 java -cp out com.tpsockets.app.client.ClientMain
 ```
+
+## Interfaz gráfica
+
+Todas las ventanas usan un tema oscuro con fondo negro:
+
+- **Dashboard**: panel central para iniciar/parar el servidor, agregar clientes y ver actividad.
+- **ServerWindow**: lista de clientes conectados, log del servidor, consola de operador para broadcasts, y tabla de ranking de apuestas en tiempo real.
+- **ClientWindow**: área de chat, campo de entrada, botón de enviar, botón de apostar, y diálogos para handshake y flujo de apuestas.
 
 ## Referencias
 
